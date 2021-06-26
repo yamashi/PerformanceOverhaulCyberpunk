@@ -11,7 +11,6 @@
 #include <d3d12/D3D12.h>
 
 #include <reverse/Type.h>
-#include <reverse/BasicTypes.h>
 #include <reverse/SingletonReference.h>
 #include <reverse/StrongReference.h>
 #include <reverse/WeakReference.h>
@@ -176,154 +175,92 @@ void Scripting::PostInitialize()
         sol::meta_function::to_string, &Enum::ToString,
         sol::meta_function::equal_to, &Enum::operator==,
         "value", sol::property(&Enum::GetValueName, &Enum::SetValueByName));
-
     luaGlobal["Enum"] = luaVm["Enum"];
 
     luaVm.new_usertype<Vector3>("Vector3",
-        sol::constructors<Vector3(float, float, float), Vector3(float, float), Vector3(float), Vector3(const Vector3&), Vector3()>(),
+        sol::constructors<Vector3(float, float, float), Vector3(float, float), Vector3(float), Vector3(sol::table), 
+                          Vector3(const Vector3&), Vector3()>(),
         sol::meta_function::to_string, &Vector3::ToString,
         sol::meta_function::equal_to, &Vector3::operator==,
-        "x", &Vector3::x,
-        "y", &Vector3::y,
-        "z", &Vector3::z);
-
+        "x", &Vector3::X,
+        "y", &Vector3::Y,
+        "z", &Vector3::Z);
     luaGlobal["Vector3"] = luaVm["Vector3"];
-    luaGlobal["ToVector3"] = [](sol::table table) -> Vector3
-    {
-        return Vector3
-        {
-            table["x"].get_or(0.f),
-            table["y"].get_or(0.f),
-            table["z"].get_or(0.f)
-        };
-    };
+    luaGlobal["ToVector3"] = [](sol::table aTable) { return Vector3(aTable); };
 
     luaVm.new_usertype<Vector4>("Vector4",
         sol::constructors<Vector4(float, float, float, float), Vector4(float, float, float), Vector4(float, float),
-                          Vector4(float), Vector4(const Vector4&), Vector4()>(),
+                          Vector4(float), Vector4(sol::table), Vector4(const Vector4&), Vector4()>(),
         sol::meta_function::to_string, &Vector4::ToString,
         sol::meta_function::equal_to, &Vector4::operator==,
-        "x", &Vector4::x,
-        "y", &Vector4::y,
-        "z", &Vector4::z,
-        "w", &Vector4::w);
-
+        "x", &Vector4::X,
+        "y", &Vector4::Y,
+        "z", &Vector4::Z,
+        "w", &Vector4::W);
     luaGlobal["Vector4"] = luaVm["Vector4"];
-    luaGlobal["ToVector4"] = [](sol::table table) -> Vector4
-    {
-        return Vector4
-        {
-            table["x"].get_or(0.f),
-            table["y"].get_or(0.f),
-            table["z"].get_or(0.f),
-            table["w"].get_or(0.f)
-        };
-    };
+    luaGlobal["ToVector4"] = [](sol::table aTable) { return Vector4(aTable); };
 
     luaVm.new_usertype<EulerAngles>("EulerAngles",
         sol::constructors<EulerAngles(float, float, float), EulerAngles(float, float), EulerAngles(float),
-                          EulerAngles(const EulerAngles&), EulerAngles()>(),
+                          EulerAngles(sol::table), EulerAngles(const EulerAngles&), EulerAngles()>(),
         sol::meta_function::to_string, &EulerAngles::ToString,
         sol::meta_function::equal_to, &EulerAngles::operator==,
-        "roll", &EulerAngles::roll,
-        "pitch", &EulerAngles::pitch,
-        "yaw", &EulerAngles::yaw);
-
+        "roll", &EulerAngles::Roll,
+        "pitch", &EulerAngles::Pitch,
+        "yaw", &EulerAngles::Yaw);
     luaGlobal["EulerAngles"] = luaVm["EulerAngles"];
-    luaGlobal["ToEulerAngles"] = [](sol::table table) -> EulerAngles
-    {
-        return EulerAngles
-        {
-            table["roll"].get_or(0.f),
-            table["pitch"].get_or(0.f),
-            table["yaw"].get_or(0.f)
-        };
-    };
+    luaGlobal["ToEulerAngles"] = [](sol::table aTable) { return EulerAngles(aTable); };
 
     luaVm.new_usertype<Quaternion>("Quaternion",
         sol::constructors<Quaternion(float, float, float, float), Quaternion(float, float, float),
-                          Quaternion(float, float), Quaternion(float), Quaternion(const Quaternion&), Quaternion()>(),
+                          Quaternion(float, float), Quaternion(float), Quaternion(sol::table),
+                          Quaternion(const Quaternion&), Quaternion()>(),
         sol::meta_function::to_string, &Quaternion::ToString,
         sol::meta_function::equal_to, &Quaternion::operator==,
         "i", &Quaternion::i,
         "j", &Quaternion::j,
         "k", &Quaternion::k,
         "r", &Quaternion::r);
-
     luaGlobal["Quaternion"] = luaVm["Quaternion"];
-    luaGlobal["ToQuaternion"] = [](sol::table table) -> Quaternion
-    {
-        return Quaternion
-        {
-            table["i"].get_or(0.f),
-            table["j"].get_or(0.f),
-            table["k"].get_or(0.f),
-            table["r"].get_or(0.f)
-        };
-    };
+    luaGlobal["ToQuaternion"] = [](sol::table aTable) { return Quaternion(aTable); };
 
     luaVm.new_usertype<CName>("CName",
-        sol::constructors<CName(const std::string&), CName(uint32_t), CName(uint32_t, uint32_t),
+        sol::constructors<CName(const std::string&), CName(uint32_t, uint32_t), CName(sol::table),
                           CName(const CName&), CName()>(),
         sol::meta_function::to_string, &CName::ToString,
         sol::meta_function::equal_to, &CName::operator==,
-        "hash_lo", &CName::hash_lo,
-        "hash_hi", &CName::hash_hi,
-        "value", sol::property(&CName::AsString));
-
+        "hash_lo", sol::property(&CName::GetHashLo, &CName::SetHashLo),
+        "hash_hi", sol::property(&CName::GetHashHi, &CName::SetHashHi),
+        "value", sol::property(&CName::ToString));
     luaGlobal["CName"] = luaVm["CName"];
-    luaGlobal["ToCName"] = [](sol::table table) -> CName
-    {
-        return CName
-        {
-            table["hash_lo"].get_or<uint32_t>(0),
-            table["hash_hi"].get_or<uint32_t>(0)
-        };
-    };
+    luaGlobal["ToCName"] = [](sol::table aTable) { return CName(aTable); };
 
     luaVm.new_usertype<TweakDBID>("TweakDBID",
         sol::constructors<TweakDBID(const std::string&), TweakDBID(const TweakDBID&, const std::string&),
-                          TweakDBID(uint32_t, uint8_t), TweakDBID(const TweakDBID&), TweakDBID()>(),
+                          TweakDBID(uint32_t, uint8_t), TweakDBID(sol::table), TweakDBID(const TweakDBID&),
+                          TweakDBID()>(),
         sol::meta_function::to_string, &TweakDBID::ToString,
         sol::meta_function::equal_to, &TweakDBID::operator==,
         sol::meta_function::addition, &TweakDBID::operator+,
         sol::meta_function::concatenation, &TweakDBID::operator+,
-        "hash", &TweakDBID::name_hash,
-        "length", &TweakDBID::name_length);
-
+        "hash", &TweakDBID::nameHash,
+        "length", &TweakDBID::nameLength);
     luaGlobal["TweakDBID"] = luaVm["TweakDBID"];
-    luaGlobal["ToTweakDBID"] = [](sol::table table) -> TweakDBID
-    {
-        return TweakDBID
-        {
-            table["hash"].get_or<uint32_t>(0),
-            table["length"].get_or<uint8_t>(0)
-        };
-    };
+    luaGlobal["ToTweakDBID"] = [](sol::table aTable) { return TweakDBID(aTable); };
 
     luaVm.new_usertype<ItemID>("ItemID",
         sol::constructors<ItemID(const TweakDBID&, uint32_t, uint16_t, uint8_t),
                           ItemID(const TweakDBID&, uint32_t, uint16_t), ItemID(const TweakDBID&, uint32_t),
-                          ItemID(const TweakDBID&), ItemID(const ItemID&), ItemID()>(),
+                          ItemID(const TweakDBID&), ItemID(sol::table), ItemID(const ItemID&), ItemID()>(),
         sol::meta_function::to_string, &ItemID::ToString,
         sol::meta_function::equal_to, &ItemID::operator==,
-        "id", &ItemID::id,
-        "tdbid", &ItemID::id,
-        "rng_seed", &ItemID::rng_seed,
-        "unknown", &ItemID::unknown,
-        "maybe_type", &ItemID::maybe_type);
-
+        "id", sol::property(&ItemID::GetTweakDBID, &ItemID::SetTweakDBID),
+        "tdbid", sol::property(&ItemID::GetTweakDBID, &ItemID::SetTweakDBID),
+        "rng_seed", &ItemID::rngSeed,
+        "unknown", &ItemID::unk0C,
+        "maybe_type", &ItemID::unk0E);
     luaGlobal["ItemID"] = luaVm["ItemID"];
-    luaGlobal["ToItemID"] = [](sol::table table) -> ItemID
-    {
-        return ItemID
-        {
-            table["id"].get_or<TweakDBID>(0),
-            table["rng_seed"].get_or<uint32_t>(2),
-            table["unknown"].get_or<uint16_t>(0),
-            table["maybe_type"].get_or<uint8_t>(0),
-        };
-    };
+    luaGlobal["ToItemID"] = [](sol::table aTable) { return ItemID(aTable); };
 
     luaGlobal["NewObject"] = [this](const std::string& acName, sol::this_environment aEnv) -> sol::object
     {
